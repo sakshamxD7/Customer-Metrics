@@ -13,7 +13,7 @@ from churn_prediction import build_ml_dataset, train_evaluate_models, get_featur
 app = Flask(__name__)
 
 # Constants
-DATA_PATH = r"C:\Users\saksh\.gemini\antigravity\scratch\data\raw\unilever_sales.csv"
+DATA_PATH = "unilever_sales.csv"
 MAX_TIMELINE_DATE = pd.to_datetime('2026-06-09')
 
 # Global cached analytics
