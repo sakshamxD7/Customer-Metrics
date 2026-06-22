@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Customer Metrics{% endblock %}</title>
+    <!-- Google Font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Local Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Plotly.js CDN -->
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sticky Topbar Navigation -->
+        <header class="topbar">
+            <div class="topbar-branding">
+                <span class="brand-title">Customer Metrics</span>
+                <span class="brand-tag">Midnight Editorial</span>
+            </div>
+            
+            <nav class="topbar-nav">
+                <a href="/overview" class="nav-item {% if request.path == '/overview' or request.path == '/' %}active{% endif %}" id="nav-overview">
+                    Overview
+                </a>
+                <a href="/rfm" class="nav-item {% if request.path == '/rfm' %}active{% endif %}" id="nav-rfm">
+                    RFM Analysis
+                </a>
+                <a href="/churn" class="nav-item {% if request.path == '/churn' %}active{% endif %}" id="nav-churn">
+                    Predictive Churn
+                </a>
+            </nav>
+            
+            <div class="topbar-metadata">
+                <div class="meta-item">
+                    <span class="meta-label">Evaluation Date</span>
+                    <span class="meta-value">2026-06-09</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Status</span>
+                    <span class="meta-value" style="color: #FF6B50; font-weight: bold;">● Active</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Viewport -->
+        <main class="viewport">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Frontend Script Logic -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

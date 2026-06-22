@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Predictive Churn - Customer Metrics{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Predictive Churn Pipeline</h1>
+    <p class="page-subtitle">Random Forest vs. XGBoost Forecasting & Risk Registry</p>
+</div>
+
+<!-- Churn Pipeline Definitions Info Card -->
+<section class="card info-card">
+    <h2 class="card-header-label">Predictive Churn Definitions & Model Pipeline</h2>
+    <div class="info-content-grid">
+        <div class="info-desc">
+            <p><strong>Operational Churn Definition:</strong> In this transaction timeline, churn is defined by an <strong>inactivity window of 3 days or more</strong> relative to the maximum timeline date (2026-06-09). Any customer whose last purchase occurred on or before June 6th, 2026 is labeled as <code>Churned</code> (1); otherwise, they are classified as <code>Active</code> (0).</p>
+        </div>
+        <div class="info-desc">
+            <p><strong>Machine Learning Setup:</strong> We fit two models on-the-fly—<strong>Random Forest</strong> and <strong>XGBoost</strong>—utilizing 26 behavioral features (e.g., total spend, order count, variety of brands/categories, and channel distributions). We completely exclude recency to prevent target leakage. The models output individual probabilities, categorizing customers into High, Medium, and Low Risk levels.</p>
+        </div>
+    </div>
+</section>
+
+<div class="split-row">
+    <!-- Left Column: Testing Accuracy Matrix & Model Selector -->
+    <div class="split-col-5">
+        <section class="card table-card" style="margin-bottom: 20px;">
+            <h2 class="card-header-label">Testing Accuracy Matrix</h2>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Performance Metric</th>
+                            <th class="num-align">Random Forest</th>
+                            <th class="num-align">XGBoost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Accuracy</td>
+                            <td class="num-align" id="metric-rf-accuracy">...</td>
+                            <td class="num-align" id="metric-xgb-accuracy">...</td>
+                        </tr>
+                        <tr>
+                            <td>Precision</td>
+                            <td class="num-align" id="metric-rf-precision">...</td>
+                            <td class="num-align" id="metric-xgb-precision">...</td>
+                        </tr>
+                        <tr>
+                            <td>Recall</td>
+                            <td class="num-align" id="metric-rf-recall">...</td>
+                            <td class="num-align" id="metric-xgb-recall">...</td>
+                        </tr>
+                        <tr>
+                            <td>F1 Score</td>
+                            <td class="num-align" id="metric-rf-f1_score">...</td>
+                            <td class="num-align" id="metric-xgb-f1_score">...</td>
+                        </tr>
+                        <tr>
+                            <td>ROC-AUC</td>
+                            <td class="num-align" id="metric-rf-roc_auc">...</td>
+                            <td class="num-align" id="metric-xgb-roc_auc">...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="margin-top: 15px; padding: 15px; background-color: #0c0c0c; border: 1px solid #1a1a1a; border-radius: 4px;">
+                <label class="filter-label" style="margin-bottom: 8px;">Active Registry & Importance Model</label>
+                <div class="model-selector-group">
+                    <label class="radio-label">
+                        <input type="radio" name="ml-model-select" value="rf" checked onchange="setMLModel(this.value)">
+                        <span class="custom-radio"></span> Random Forest (Accuracy: 75.5%)
+                    </label>
+                    <label class="radio-label" style="margin-top: 8px;">
+                        <input type="radio" name="ml-model-select" value="xgb" onchange="setMLModel(this.value)">
+                        <span class="custom-radio"></span> XGBoost (Accuracy: 73.4%)
+                    </label>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Right Column: Feature Importances -->
+    <div class="split-col-5">
+        <section class="card chart-card">
+            <h2 class="card-header-label" id="importance-chart-header">Random Forest Feature Importances</h2>
+            <div id="churn-importance-viewport" class="chart-viewport" style="height: 250px;">
+                <div class="chart-loading">Compiling model parameters...</div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Customer Risk Registry -->
+<section class="card table-card" style="margin-top: 20px;">
+    <h2 class="card-header-label">Live Customer Risk Registry</h2>
+    
+    <!-- Registry Filters -->
+    <div class="registry-filter-bar">
+        <div class="reg-filter-col">
+            <label class="filter-label" for="registry-search">Search Customer Name</label>
+            <input type="text" id="registry-search" placeholder="Type customer name..." class="text-input" oninput="applyRegistryFilters()">
+        </div>
+        
+        <div class="reg-filter-col">
+            <label class="filter-label">Filter Risk Level</label>
+            <div class="checkbox-row">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chk-risk-high" value="High" checked onchange="applyRegistryFilters()"> High (≥ 70%)
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chk-risk-medium" value="Medium" checked onchange="applyRegistryFilters()"> Medium (30% - 70%)
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chk-risk-low" value="Low" checked onchange="applyRegistryFilters()"> Low (< 30%)
+                </label>
+            </div>
+        </div>
+        
+        <div class="reg-filter-col">
+            <label class="filter-label">Filter Actual Status</label>
+            <div class="checkbox-row">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chk-status-churned" value="Churned" checked onchange="applyRegistryFilters()"> Churned (Inactive ≥ 3d)
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chk-status-active" value="Active" checked onchange="applyRegistryFilters()"> Active
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registry Data Table -->
+    <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+        <table class="data-table" id="registry-table">
+            <thead>
+                <tr>
+                    <th style="cursor: pointer;" onclick="sortRegistry('customer_name')">Customer Name <span id="sort-icon-customer_name">↕</span></th>
+                    <th class="num-align" style="cursor: pointer;" onclick="sortRegistry('recency')">Recency <span id="sort-icon-recency">↕</span></th>
+                    <th class="num-align" style="cursor: pointer;" onclick="sortRegistry('frequency')">Frequency <span id="sort-icon-frequency">↕</span></th>
+                    <th class="num-align" style="cursor: pointer;" onclick="sortRegistry('monetary')">Monetary (Spend) <span id="sort-icon-monetary">↕</span></th>
+                    <th style="cursor: pointer;" onclick="sortRegistry('prob')">Churn Probability <span id="sort-icon-prob">↕</span></th>
+                    <th>Risk Level</th>
+                    <th>Actual Status</th>
+                </tr>
+            </thead>
+            <tbody id="registry-tbody">
+                <tr>
+                    <td colspan="7" class="loading-td">Initializing risk profiles...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Page initialization routing marker -->
+<div id="page-marker" data-page="churn"></div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}RFM Segmentation - Customer Metrics{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">RFM Segmentation</h1>
+    <p class="page-subtitle">Customer Value Profiling & 3D Spatial Cohorts</p>
+</div>
+
+<!-- RFM Segmentation Framework Definitions Card -->
+<section class="card info-card">
+    <h2 class="card-header-label">RFM Segmentation Framework</h2>
+    <div class="info-content-grid">
+        <div class="info-desc">
+            <p><strong>What is RFM?</strong> RFM is a behavior-based database segmentation framework that ranks customers based on transaction history:
+            <ul style="margin-left: 20px; margin-top: 5px;">
+                <li><strong>Recency (R):</strong> Days elapsed between the customer's last invoice and the final dataset date (2026-06-09).</li>
+                <li><strong>Frequency (F):</strong> The count of unique invoice orders placed by the customer during the 9-day period.</li>
+                <li><strong>Monetary (M):</strong> The sum of all net transaction amounts associated with the customer's orders.</li>
+            </ul>
+            </p>
+        </div>
+        <div class="info-desc">
+            <p><strong>Cohort Classification:</strong> R scores are mapped directly from inactivity windows (0 days = 5 to 4+ days = 1). F and M scores use rank percentiles to generate five equal-sized bins. Spatially, these scores compile into:
+            <ul style="margin-left: 20px; margin-top: 5px;">
+                <li><strong>Champions:</strong> High score in all three indicators (value leaders).</li>
+                <li><strong>Loyal Customers:</strong> Regular transactions and consistent spend.</li>
+                <li><strong>At Risk / Need Attention:</strong> Inactive for 3+ days, but with strong purchase history.</li>
+            </ul>
+            </p>
+        </div>
+    </div>
+</section>
+
+<div class="split-row">
+    <!-- Left Column: Segment Profiles Table -->
+    <div class="split-col-4">
+        <section class="card table-card">
+            <h2 class="card-header-label">Segment Profiles Summary</h2>
+            <div class="table-container">
+                <table class="data-table" id="rfm-summary-table">
+                    <thead>
+                        <tr>
+                            <th>RFM Segment</th>
+                            <th class="num-align">Customers</th>
+                            <th class="num-align">Share</th>
+                            <th>Avg Recency</th>
+                            <th>Avg Orders</th>
+                            <th>Avg Spend</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rfm-summary-tbody">
+                        <tr>
+                            <td colspan="6" class="loading-td">Compiling segment metrics...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="note-box">
+                <h3 class="note-header">Recency Calculation Note</h3>
+                <p class="note-content">
+                    Due to the ultra-dense 9-day transaction timeline (2026-06-01 to 2026-06-09), recency is calculated directly against the final timeline date of <b>2026-06-09</b>. 
+                    Scores are mapped: 0 days = 5, 1 day = 4, 2 days = 3, 3 days = 2, and 4+ days = 1.
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Right Column: 3D Scatter Space Plot -->
+    <div class="split-col-6">
+        <section class="card chart-card">
+            <div class="chart-header">
+                <h2 class="card-header-label" style="margin: 0;">Responsive 3D Space Graph</h2>
+                <div class="metric-selector">
+                    <button class="selector-btn active" id="btn-scale-log" onclick="setMonetaryScale('log')">Log Scale</button>
+                    <button class="selector-btn" id="btn-scale-linear" onclick="setMonetaryScale('linear')">Linear Scale</button>
+                </div>
+            </div>
+            <div id="rfm-3d-chart-viewport" class="chart-viewport" style="height: 480px;">
+                <div class="chart-loading">Initializing 3D coordinate space...</div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Page initialization routing marker -->
+<div id="page-marker" data-page="rfm"></div>
+{% endblock %}

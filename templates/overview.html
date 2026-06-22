@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Overview - Customer Metrics{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Overview Dashboard</h1>
+    <p class="page-subtitle">Dynamic Transaction KPIs & Daily Tracking Trends</p>
+</div>
+
+<!-- About the Dataset & Application Info Card -->
+<section class="card info-card">
+    <h2 class="card-header-label">About the Dataset & Application</h2>
+    <div class="info-content-grid">
+        <div class="info-desc">
+            <p><strong>Database Context:</strong> This dashboard is powered by cleaned sales transaction records from <code>unilever_sales.csv</code>, representing 31,437 rows of invoice details spanning a dense 9-day transactional window from <strong>2026-06-01 to 2026-06-09</strong>. The backend pipeline cleans numeric fields (such as <code>Net Amount</code> and <code>Sales Value</code>) by stripping currency formatting and commas before executing analytics.</p>
+        </div>
+        <div class="info-desc">
+            <p><strong>App Objectives:</strong> The platform helps visualize core performance trends, analyze customer loyalty, and predict churn. Users can filter invoices dynamically to update KPI metrics, calculate custom RFM (Recency, Frequency, Monetary) value cohorts, and utilize Random Forest and XGBoost classifiers to forecast customer churn risk in real time.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Dynamic Filter Matrix -->
+<section class="card filter-matrix-card">
+    <h2 class="card-header-label">Custom Filter Matrix</h2>
+    <div class="filter-grid">
+        <!-- Min Order Value Range Filter -->
+        <div class="filter-col">
+            <label class="filter-label" for="slider-min-amount">Minimum Order Value (Net Amount)</label>
+            <div class="slider-wrapper">
+                <input type="range" id="slider-min-amount" min="0" max="10000" value="0" step="100" class="range-slider">
+                <span id="label-min-amount" class="slider-display">£0</span>
+            </div>
+            <p class="filter-help-text">Filters out individual transactions below this amount.</p>
+        </div>
+
+        <!-- Category Select Filter -->
+        <div class="filter-col">
+            <label class="filter-label" for="select-categories">Product Categories</label>
+            <select id="select-categories" class="text-input">
+                <option value="ALL">All Categories</option>
+            </select>
+        </div>
+
+        <!-- Brand Select Filter -->
+        <div class="filter-col">
+            <label class="filter-label" for="select-brands">Brands</label>
+            <select id="select-brands" class="text-input">
+                <option value="ALL">All Brands</option>
+            </select>
+        </div>
+
+        <!-- Master Channel Select Filter -->
+        <div class="filter-col">
+            <label class="filter-label" for="select-channels">Master Channels</label>
+            <select id="select-channels" class="text-input">
+                <option value="ALL">All Channels</option>
+            </select>
+        </div>
+    </div>
+</section>
+
+<!-- High-Fidelity Overview Section Grid -->
+<div class="overview-top-row">
+    <!-- Left: Stack of 4 horizontal KPI Cards -->
+    <div class="kpi-stack">
+        <div class="kpi-card-horizontal">
+            <div class="kpi-info">
+                <div class="kpi-label">Unique Customers</div>
+                <div class="kpi-value" id="kpi-customer-count">0</div>
+            </div>
+            <div class="kpi-icon-circle blue-tint">👥</div>
+        </div>
+        
+        <div class="kpi-card-horizontal">
+            <div class="kpi-info">
+                <div class="kpi-label">Net Revenue</div>
+                <div class="kpi-value" id="kpi-net-revenue">£0.00</div>
+            </div>
+            <div class="kpi-icon-circle coral-tint">£</div>
+        </div>
+        
+        <div class="kpi-card-horizontal">
+            <div class="kpi-info">
+                <div class="kpi-label">Avg Order Value</div>
+                <div class="kpi-value" id="kpi-avg-order-value">£0.00</div>
+            </div>
+            <div class="kpi-icon-circle gold-tint">💳</div>
+        </div>
+        
+        <div class="kpi-card-horizontal">
+            <div class="kpi-info">
+                <div class="kpi-label">Total Invoices</div>
+                <div class="kpi-value" id="kpi-order-count">0</div>
+            </div>
+            <div class="kpi-icon-circle green-tint">📦</div>
+        </div>
+    </div>
+    
+    <!-- Center: Sales Report Chart -->
+    <section class="card chart-card flex-grow-chart">
+        <div class="chart-header">
+            <h2 class="card-header-label" style="margin: 0;">Sales Report</h2>
+            <div class="metric-selector">
+                <button class="selector-btn active" id="btn-metric-revenue" onclick="setTemporalMetric('revenue')">Revenue</button>
+                <button class="selector-btn" id="btn-metric-orders" onclick="setTemporalMetric('orders')">Orders</button>
+                <button class="selector-btn" id="btn-metric-customers" onclick="setTemporalMetric('customers')">Customers</button>
+            </div>
+        </div>
+        <div id="temporal-chart-viewport" class="chart-viewport" style="height: 320px;">
+            <div class="chart-loading">Compiling transactional timeline...</div>
+        </div>
+    </section>
+    
+    <!-- Right: Top-Selling Products Listing -->
+    <section class="card top-products-card">
+        <h2 class="card-header-label" style="margin-bottom: 16px;">Top-Selling Products</h2>
+        <div class="top-products-list" id="top-products-list">
+            <!-- Populated by JS -->
+            <div class="loading-text">Loading top products...</div>
+        </div>
+    </section>
+</div>
+
+<!-- Bottom Section: Recent Orders Table & Donut Chart -->
+<div class="split-row" style="margin-top: 8px;">
+    <!-- Bottom Left: Recent Orders (70%) -->
+    <div class="split-col-6">
+        <section class="card table-card">
+            <h2 class="card-header-label">Recent Orders</h2>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Product Description</th>
+                            <th>Brand</th>
+                            <th class="num-align">Quantity</th>
+                            <th class="num-align">Revenue</th>
+                            <th>Channel</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-orders-tbody">
+                        <tr>
+                            <td colspan="5" class="loading-td">Compiling transaction records...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Bottom Right: Order Statistics Donut (30%) -->
+    <div class="split-col-4">
+        <section class="card chart-card">
+            <h2 class="card-header-label">Order Statistics</h2>
+            <div id="channel-donut-viewport" class="chart-viewport" style="height: 280px;">
+                <div class="chart-loading">Assembling channel splits...</div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Page initialization routing marker -->
+<div id="page-marker" data-page="overview"></div>
+{% endblock %}
