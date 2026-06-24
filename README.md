@@ -10,10 +10,11 @@ A full-stack analytics dashboard built on a Unilever wholesale distribution data
 
 <!-- Add screenshots here -->
 
-| Overview | RFM Segmentation | Churn Prediction |
-|:---:|:---:|:---:|
+| Overview |
 |<img width="1919" height="958" alt="image" src="https://github.com/user-attachments/assets/10cf9b8a-bd78-4700-9826-5aa8bc4fbc85" />|
+| RFM Segmentation |
 |<img width="1912" height="961" alt="image" src="https://github.com/user-attachments/assets/28db2746-cdb3-4464-a3c1-06ffedbf7533" />|
+| Churn Prediction |
 |<img width="1919" height="957" alt="image" src="https://github.com/user-attachments/assets/8dbe9805-2cf9-44a9-90c7-0b1d64fde2a5" />|
 
 
